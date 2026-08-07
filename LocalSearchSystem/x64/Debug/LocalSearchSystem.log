@@ -1,0 +1,5 @@
+﻿  functions.cpp
+E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(14,7): error C2143: синтаксическая ошибка: отсутствие ";" перед ")"
+E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(19,1): error C2143: синтаксическая ошибка: отсутствие ";" перед "}"
+E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(19,1): error C2143: синтаксическая ошибка: отсутствие ")" перед "}"
+E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(19,1): error C2059: синтаксическая ошибка: }
