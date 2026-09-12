@@ -47,53 +47,78 @@ void SnapshotFile::parseFile(const std::filesystem::path& filePath, SnapshotFile
 {
 	std::ifstream myFile(filePath);
 
-	if (!myFile.is_open())
+	try
 	{
-		throw std::runtime_error("Файл " + filePath.string() + " не был открыт успешно!");
-	}
-
-	myFile.exceptions(std::ios::failbit || std::ios::badbit);
-
-	char c;
-	std::string currStr;
-	uint32_t countLines = 1;
-
-	while (myFile.get(c))
-	{
-		if (!isSeparator(c))
+		if (!myFile.is_open())
 		{
-			currStr.push_back(c);
+			throw std::runtime_error("Файл " + filePath.string() + " не был открыт успешно!");
 		}
-		else
+
+		myFile.exceptions(std::ios::failbit || std::ios::badbit);
+
+		char c;
+		std::string currStr;
+		uint32_t countLines = 1;
+
+		while (myFile.get(c))
 		{
-			if (currStr.size() != 0)
+			if (!isSeparator(c))
 			{
-				if (obj.invertedIndex.contains(currStr))
+				currStr.push_back(c);
+			}
+			else
+			{
+				if (currStr.size() != 0)
 				{
-					if (obj.invertedIndex[currStr][obj.invertedIndex[currStr].size() - 1].docId == indFile)
+					if (obj.invertedIndex.contains(currStr))
 					{
-						std::size_t ind = obj.invertedIndex[currStr].size() - 1;
-						obj.invertedIndex[currStr][ind].count++;
-						obj.invertedIndex[currStr][ind].lines.push_back(countLines);
+						if (obj.invertedIndex[currStr][obj.invertedIndex[currStr].size() - 1].docId == indFile)
+						{
+							std::size_t ind = obj.invertedIndex[currStr].size() - 1;
+							obj.invertedIndex[currStr][ind].count++;
+							obj.invertedIndex[currStr][ind].lines.push_back(countLines);
+						}
+						else
+						{
+							obj.invertedIndex[currStr].push_back(SnapshotFile::MatchInfo(indFile, countLines));
+						}
 					}
 					else
 					{
-						obj.invertedIndex[currStr].push_back(SnapshotFile::MatchInfo(indFile, countLines));
+						obj.invertedIndex.emplace(currStr, std::vector<MatchInfo>{MatchInfo(indFile, countLines)});
 					}
+
+					currStr.clear();
 				}
-				else
+
+				if (c == '\n')
 				{
-					obj.invertedIndex.emplace(currStr, std::vector<MatchInfo>{MatchInfo(indFile, countLines)});
+					countLines++;
 				}
-
-				currStr.clear();
-			}
-
-			if (c == '\n')
-			{
-				countLines++;
 			}
 		}
+		if (currStr.size() != 0)
+		{
+			;
+		}
+
+		obj.badFiles.push_back(false);
+	}
+	catch (const std::ios_base::failure& ext)
+	{
+		obj.badFiles.push_back(true);
+
+		for (auto& currPair : obj.invertedIndex)
+		{
+			if (currPair.second[currPair.second.size() - 1].docId == indFile)
+			{
+				currPair.second.pop_back();
+			}
+		}
+	}
+	catch (const std::runtime_error& ext)
+	{
+		obj.badFiles.push_back(true);
 	}
 }
 
@@ -106,12 +131,32 @@ SnapshotFile::SnapshotFile(const std::filesystem::path& path, const SearchParame
 		throw std::invalid_argument("Указанный путь не существует: " + rootDir.string());
 	}
 
-	auto options = fs::directory_options::skip_permission_denied;
+	if (!fs::is_directory(rootDir))
+	{
+		auto options = fs::directory_options::skip_permission_denied;
 
-	if (parametrs.depLimith)
-		parseFileSpace(fs::directory_iterator(rootDir, options), fs::directory_iterator{}, *this);
+		if (parametrs.depLimith)
+		{
+			parseFileSpace(fs::directory_iterator(rootDir, options), fs::directory_iterator{}, *this);
+		}
+		else
+		{
+			parseFileSpace(fs::recursive_directory_iterator(rootDir, options), fs::recursive_directory_iterator{}, *this);
+		}
+	}
 	else
-		parseFileSpace(fs::recursive_directory_iterator(rootDir, options), fs::recursive_directory_iterator{}, *this);
+	{
+		if (!parametrs.formatFiles.contains(rootDir.string()))
+		{
+			throw std::invalid_argument("Путь указывает на файл недопустимого формата: " + rootDir.extension().string());
+		}
+
+		docIdToPath.push_back(rootDir);
+		pathToDocId.try_emplace(rootDir, 0);
+		isOutdated = { false };
+
+		parseFile(rootDir, *this, 0);
+	}
 }
 
 bool isSeparator(char c)
@@ -125,5 +170,12 @@ bool isSeparator(char c)
 		c == '?' ||
 		c == ';' ||
 		c == ':' ||
-		c == '"';
+		c == '"' ||
+		c == '(' ||
+		c == ')' ||
+		c == '{' ||
+		c == '}' ||
+		c == '\\' ||
+		c == '/' ||
+		c == '\r';
 }		

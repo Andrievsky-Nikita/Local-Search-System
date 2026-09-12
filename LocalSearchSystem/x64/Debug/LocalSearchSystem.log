@@ -1,9 +1,10 @@
-﻿  LocalSearchSystem.cpp
-  functions.cpp
+﻿  functions.cpp
+E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(107,39): warning C4101: ext: неиспользованная локальная переменная
+E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(119,35): warning C4101: ext: неиспользованная локальная переменная
 E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(22,41): warning C4101: ext: неиспользованная локальная переменная
       E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(22,41):
       контекст создания экземпляра шаблона (сначала самый старый)
-          E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(112,3):
+          E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(140,4):
           выполняется компиляция ссылки на экземпляр шаблон функции "void SnapshotFile::parseFileSpace<std::filesystem::directory_iterator>(Iterator,Iterator,SnapshotFile &)"
           with
           [
@@ -11,5 +12,6 @@ E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\fun
           ]
   
 E:\Nikita\весь псевдо ворк\LocalSearchSystem\LocalSearchSystem\functions.cpp(34,37): warning C4101: ext: неиспользованная локальная переменная
+  LocalSearchSystem.cpp
   Создание кода...
   LocalSearchSystem.vcxproj -> E:\Nikita\весь псевдо ворк\LocalSearchSystem\x64\Debug\LocalSearchSystem.exe
