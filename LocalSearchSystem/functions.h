@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <filesystem>
+#include <system_error>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -11,19 +12,21 @@
 #include <cstdint>
 #include <algorithm>
 
+bool isSeparator(char c);
+
 class SearchParametr
 {
 public:
 
-	bool depLimith;
-	bool ignoreSystem;
+	bool depLimith = false;
 	std::unordered_set<std::string> formatFiles;
 
 	SearchParametr() = default; 
-    SearchParametr(bool lim, bool ignr, std::initializer_list<std::string> lst) : depLimith(lim), ignoreSystem(ignr), formatFiles(lst) {}
+    SearchParametr(bool lim, std::initializer_list<std::string> lst) : depLimith(lim), formatFiles(lst) {}
 };
 
-class SnapshotFile {
+class SnapshotFile
+{
 private:
 
     class MatchInfo;
@@ -33,25 +36,19 @@ private:
     std::unordered_map<std::string, std::vector<MatchInfo>> invertedIndex;
     std::unordered_map<std::filesystem::path, uint32_t> pathToDocId;
     std::vector<std::filesystem::path> docIdToPath; 
-    std::vector<bool> isDeleted; 
+    std::vector<bool> badFiles;
+    std::vector<bool> isOutdated; 
 
-    static std::pair<std::string, std::vector<uint32_t>> parseFile(
-        const std::filesystem::path& filePath
-    );
+    template <typename Iterator>
+    static void parseFileSpace(Iterator begin, Iterator end, SnapshotFile& obj);
+
+    static void parseFile(const std::filesystem::path& filePath, SnapshotFile& obj, uint32_t indFile);
+
 public:
 
     class SearchResult;
 
     SnapshotFile(const std::filesystem::path& path, const SearchParametr& param);
-};
-
-class SnapshotFile::SearchResult
-{
-public:
-
-    std::string filePath;
-    uint32_t occurrences;
-    std::vector<uint32_t> lines;
 };
 
 class SnapshotFile::MatchInfo 
@@ -60,5 +57,20 @@ public:
 
     uint32_t docId;
     uint32_t count;
+    std::vector<uint32_t> lines;
+
+    MatchInfo(uint32_t doc, uint32_t line) : 
+        docId(doc),
+        count(1),
+        lines(std::vector<uint32_t> {line})
+    {}
+};
+
+class SnapshotFile::SearchResult
+{
+public:
+
+    std::string filePath;
+    uint32_t occurrences;
     std::vector<uint32_t> lines;
 };
